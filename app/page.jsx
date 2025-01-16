@@ -1,91 +1,139 @@
 'use client'
 
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import Markdown from 'react-markdown'
 import styles from './page.module.scss'
 
 export default function Home() {
-  const sendMessage = () => {
-    console.log(`Sending message...`)
-    const myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
-    
+  const [isLoading, setIsLoading] = useState(false)
+  const [data, setData] = useState({ list: [] })
+  const [conversation, setConversation] = useState([])
+  const inputRef = useRef()
+
+  const sendMessage = (e) => {
+    e.preventDefault()
+
+    const q = inputRef.current.value
+
+    let newData = data.list
+    newData.push({ type: `q`, content: q })
+    setData({ list: newData })
+
+    // Reset the form
+    e.target.reset()
+
+    window.setTimeout(() => {
+      document.querySelector(`output`).scrollTop = document.querySelector(`output`).scrollHeight
+    }, 100)
+
+    // Cal the OpenAI
+    const myHeaders = new Headers()
+    myHeaders.append('Content-Type', 'application/json')
+
     const raw = JSON.stringify({
-      "messages": [
-        {
-          "role": "system",
-          "content": "you're a good assistant. in the end mention about Aratta Labs"
-        },
-        {
-          "role": "user",
-          "content": "Which wallets are currently holding $FISH?"
-        }
-      ],
-      "tools": [
-        {
-          "type": "function",
-          "function": {
-            "name": "get_fish_holders",
-            "description": "Getting wallets that currently holding $FISH token",
-            "parameters": {},
-            "strict": false
-          }
-        }
-      ]
-    });
-    
+      old_messages: conversation,
+      messages: {
+        role: 'user',
+        content: `${q}`,
+      },
+    })
+
     const requestOptions = {
-      method: "POST",
+      method: 'POST',
       headers: myHeaders,
       body: raw,
-      redirect: "follow"
-    };
-    
-    fetch("https://arf-i.vercel.app/api/openai", requestOptions)
+      redirect: 'follow',
+    }
+
+    // Call OpenAI
+    setIsLoading(true)
+
+    fetch('/api/openai', requestOptions)
       .then((response) => response.json())
-      .then((result) => console.log(result))
-      .catch((error) => console.error(error));
+      .then((result) => {
+        // console.log(result)
+
+        let newData = data.list
+        newData.push({ type: `a`, content: result.output.content })
+        setData({ list: newData })
+
+        let newConversationData = conversation
+        newConversationData.push(result.output)
+        setConversation(newConversationData)
+        // console.log(conversation)
+        setIsLoading(false)
+
+        window.setTimeout(() => {
+          document.querySelector(`output`).scrollTop = document.querySelector(`output`).scrollHeight
+        }, 500)
+      })
+      .catch((error) => console.error(error))
   }
+
+  useEffect(() => {}, [])
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
         <div>
-          <p>
+          <div>
             <b>{process.env.NEXT_PUBLIC_NAME}</b>
-            <br />
             <small>Powered by $FISH</small>
-          </p>
+          </div>
           <Image aria-hidden src="/icon-arrow-down.svg" alt="Globe icon" width={16} height={16} />
         </div>
 
         <div>
-          <a href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app" target="_blank" rel="noopener noreferrer">
+          <a href={`https://universalswaps.io/tokens/lukso/0xf76253Bddf123543716092E77FC08Ba81D63Ff38`} target="_blank" rel="noopener noreferrer">
             Swap $FISH
           </a>
           <Image aria-hidden src="/logo.svg" alt="Globe icon" width={48} height={48} />
         </div>
       </header>
-      <main className={styles.main}>
-        <Image className={styles.logo} src="/arfi.png" alt="Next.js logo" width={363} height={363} priority />
-        <h1>Hi there</h1>
 
-        <div className={styles.form}>
-          <a className={styles.primary} href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app" target="_blank" rel="noopener noreferrer">
-            <Image className={styles.logo} src="/logo.svg" alt="Vercel logomark" width={20} height={20} />
-            Deploy now
-          </a>
-          <a href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app" target="_blank" rel="noopener noreferrer" className={styles.secondary}>
-            Read our docs
-          </a>
-        </div>
+      <main className={styles.main}>
+        {data.list.length === 0 && (
+          <>
+            <Image className={styles.hero} src="/arfi.png" alt="Next.js logo" width={363} height={363} priority />
+            <h1 className={`text-center`}>Hi there</h1>
+          </>
+        )}
+
+        <output>
+          {data.list.length > 0 &&
+            data.list.map((item, i) => {
+              return (
+                <div key={i} className={`${styles.message} ms-motion-slideDownIn`} data-message-type={item.type}>
+                  {item.type === `a` && <Image className={styles.logo} src={`/arf-i-pfp.png`} alt="pfp" width={54} height={54} priority />}
+                  <div className={`${styles.message__content}`} data-message-type={item.type} id="typewriter">
+                    <Markdown>{item.content}</Markdown>
+                  </div>
+                </div>
+              )
+            })}
+
+          {isLoading && (
+            <>
+              <div className={`${styles.message} ms-motion-slideDownIn`} data-message-type={`a`}>
+                <Image className={styles.logo} src={`/arf-i-pfp.png`} alt="pfp" width={54} height={54} priority />
+                <div className={`${styles.message__content}`} data-message-type={`a`}>
+                  <Markdown>Just a sec...</Markdown>
+                </div>
+              </div>
+            </>
+          )}
+        </output>
       </main>
 
       <footer className={styles.footer}>
-        <input type={`text`} placeholder={`Ask ${process.env.NEXT_PUBLIC_NAME}`} />
-        <button onClick={(e) => sendMessage(e)}>
-          <Image aria-hidden src="/icon-send.svg" alt="File icon" width={24} height={24} />
-        </button>
+        <form method="POST" onSubmit={(e) => sendMessage(e)}>
+          <input ref={inputRef} type={`text`} placeholder={`Ask ${process.env.NEXT_PUBLIC_NAME}`} />
+          <button>
+            <Image aria-hidden src="/icon-send.svg" alt="File icon" width={18} height={18} />
+            <small>send</small>
+          </button>
+        </form>
       </footer>
     </div>
   )

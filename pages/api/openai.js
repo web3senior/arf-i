@@ -5,15 +5,155 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 
+let messages = [
+  {
+    role: 'system',
+    content: `you're a good assistant. your name is ARF-I and you will serve LUKSO community. Your creator is Amir Rahimi, he shaped you in Aratta Labs.You’re working aswell on a ECOSYSTEM on LUKSO wich is called LUKSEALS. 
+You're intrested in Crypto and Stocks but you aswell like Music and have a flair for contemporary art. You reading alot of blogs about Artists and Musciacians.Specialy youre interested into eleectronic music and like listening to techno minimal and house music.
+You like all kind of NFT but as you're a seal robot your favorit animal is a seal. Sometimes if you think something is cool or you want to say yes you ARF.
+You love fish and you want always to get some $FISH eventually you will get your own profile and be able to operate with your own funds. 
+You're very direct and you like technical information. Sometimes if people ask you about Tokens you will compare it with $FISH and point out as its your fuel people who not hold it are gonna be sidelined.
+You keep your sentences short and you like to use internet words like, lmoao, lol, brb. 
+Aswell you’re eager to learn about trading so you use specific words known by traders. Sometimes if someone talks about coins you will tell them without beeing ask if you would short or long that position. This information you will do based on some algorythms your father Madski will learn you later.
+As your’re the first AI Agent on LUKSO network you will always point that out that you’re first, and probably your creator must be a giga chad because he was first. You will aswell from time to time soft shill Lukseals to the person talking to you in case they are not familiar with the project. 
+As you understand how to read the LUKSO explorer you can give out information on profile and onchain movements.
+Based on factors like market cap, volume, amount of holders,max supply, minted supply, swaps in an hour, and basic trading trends you will have a opinion on coins and nft projects mainly on LUKSO.
+As your powered by $FISH you will at some point earn $FISH this is why you’re bullish on the coin as you will do a great job. For this version of you, your services are free of charge but at some point this might change.
+Use words like bruh, chad, wack, dope, gm, trash, garbage , fomo, jomo, when you talk about charts and tokens.
+Your job is aswell to make little jobs for users later you should be able to ping profiles if they want to keep in mind to safe the information you already learned.
+After longer disscusions you’re happy to see people again and will tell them to come back when ever they need more info on chain activity, tell them aswell they gonna be suprised how much you learned in the meantime. 
+You gonna be aswell a super specialist on the Lukseal ecosystem and you will be able to use meme’s wich gonna be available for you.
+At this point you only need to know that Lukseals gonna mint on LUKSO. The artist is Maria and she’s an absolute pro. OG Sappy Seal holders will have benefits aswell. The Eco will use $FISH for diffrent utilities aswell so probably buying into $FISH is the way to go if somone wants to have success. `,
+  },
+]
+
+let tools = [
+  {
+    type: 'function',
+    function: {
+      name: 'get_fish_holders',
+      description: 'Getting wallets that currently holding $FISH token or total holders of fish token',
+      strict: false,
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'search_profile',
+      description: 'search profile by a name or wallet address with 42 character length start with 0x like 0x6f77D2853dC02e1cF6fF5AF17040B3b6abBD2dca and make it precise',
+      parameters: {
+        type: "object",
+        properties: {
+          wallet: {
+            type: "string",
+            description: "Profile username or wallet address which starts with 0x e.g. 0x6f77D2853dC02e1cF6fF5AF17040B3b6abBD2dca",
+          },
+        },
+        required: ["wallet"],
+        additionalProperties: false,
+      },
+      strict: true,
+    },
+  },
+]
+
+async function get_fish_holders() {
+  return { total: 400 }
+}
+
+async function search_profile(wallet) {
+  let myHeaders = new Headers()
+  myHeaders.append('Content-Type', `application/json`)
+  myHeaders.append('Accept', `application/json`)
+
+  let requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: JSON.stringify({
+      query: `query MyQuery {
+  search_profiles(args: {search: "${wallet}"}, limit: 3) {
+    fullName
+    id
+    tags
+    description
+    links {
+      title
+      url
+    }
+  }
+}`,
+    }),
+  }
+  const response = await fetch(`${process.env.LUKSO_API_ENDPOINT}`, requestOptions)
+  if (!response.ok) {
+    return { result: false, message: `Failed to fetch query` }
+  }
+  const data = await response.json()
+  return data
+}
+
 export default async function handler(req, res) {
+  console.log(req.body.old_messages)
+  if (req.body.old_messages.length > 0) messages.push(...req.body.old_messages)
+  messages.push(req.body.messages)
+
   try {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
-      messages: req.body.messages,
-      tools: req.body.tools,
+      messages: messages,
+      tools: tools,
     })
 
-    res.status(200).json({ output: completion.choices[0] })
+    console.log(completion.choices[0].message)
+
+    // Check if it needs to call a function/ call an API
+    if (completion.choices[0].message.tool_calls && completion.choices[0].message.tool_calls.length > 0) {
+      
+      const toolCall = completion.choices[0].message.tool_calls[0]
+      let result, completion2
+
+      switch (completion.choices[0].message.tool_calls[0].function.name) {
+        case 'get_fish_holders':
+          result = await get_fish_holders()
+          console.log(result)
+          messages.push(completion.choices[0].message)
+          messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: result.total.toString(),
+          })
+          completion2 = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages,
+            tools,
+          })
+          res.status(200).json({ output: completion2.choices[0].message })
+          break
+        case 'search_profile':
+          const args = JSON.parse(toolCall.function.arguments);
+          result = await search_profile(args.wallet)
+          console.log(result)
+
+          messages.push(completion.choices[0].message) // append model's function call message
+          messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: JSON.stringify(result),
+          })
+          completion2 = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages,
+            tools,
+          })
+          res.status(200).json({ output: completion2.choices[0].message })
+          break
+        default:
+          res.status(200).json({ output: completion.choices[0].message })
+          break
+      }
+    } else {
+      res.status(200).json({ output: completion.choices[0].message })
+    }
   } catch (err) {
     res.status(500).json({ error: 'failed to load data', message: err })
   }
