@@ -1,20 +1,51 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react'
 import styles from './page.module.scss'
 
 export default function Home() {
-
-  const sendMessage =  ()=>{
+  const sendMessage = () => {
     console.log(`Sending message...`)
-    
-    fetch('/api/hello')
-      .then((response) => response.json())
-      .then((data) => {
-        setData(data);
-        setLoading(false);
-      });
+
+    const myHeaders = new Headers()
+    myHeaders.append('Content-Type', 'application/json')
+
+    const raw = JSON.stringify({
+      messages: [
+        {
+          role: 'system',
+          content: "you're a good assistant. in the end mention about Aratta Labs",
+        },
+        {
+          role: 'user',
+          content: 'Which wallets are currently holding $FISH?',
+        },
+      ],
+      tools: [
+        {
+          type: 'function',
+          function: {
+            name: 'get_fish_holders',
+            description: 'Getting wallets that currently holding $FISH token',
+            parameters: {},
+            strict: false,
+          },
+        },
+      ],
+    })
+
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow',
+    }
+
+    fetch('https://arf-i.vercel.app/api/openai', requestOptions)
+      .then((response) => response.text())
+      .then((result) => console.log(result))
+      .catch((error) => console.error(error))
   }
 
   return (
