@@ -7,7 +7,7 @@ const nextConfig = {
                 source: "/api/:path*",
                 headers: [
                     // other headers omitted for brevity...
-                    { key: "Cross-Origin-Opener-Policy", value: "*" }//same-origin
+                    { key: "Access-Control-Allow-Origin", value: "*" }//same-origin
                 ]
             }
         ]

@@ -37,6 +37,7 @@ export default function Home() {
 
     const requestOptions = {
       method: 'POST',
+      mode: 'no-cors',
       headers: myHeaders,
       body: raw,
       redirect: 'follow',
