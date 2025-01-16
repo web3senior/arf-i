@@ -7,46 +7,44 @@ import styles from './page.module.scss'
 export default function Home() {
   const sendMessage = () => {
     console.log(`Sending message...`)
-
-    const myHeaders = new Headers()
-    myHeaders.append('Content-Type', 'application/json')
-
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    
     const raw = JSON.stringify({
-      messages: [
+      "messages": [
         {
-          role: 'system',
-          content: "you're a good assistant. in the end mention about Aratta Labs",
+          "role": "system",
+          "content": "you're a good assistant. in the end mention about Aratta Labs"
         },
         {
-          role: 'user',
-          content: 'Which wallets are currently holding $FISH?',
-        },
+          "role": "user",
+          "content": "Which wallets are currently holding $FISH?"
+        }
       ],
-      tools: [
+      "tools": [
         {
-          type: 'function',
-          function: {
-            name: 'get_fish_holders',
-            description: 'Getting wallets that currently holding $FISH token',
-            parameters: {},
-            strict: false,
-          },
-        },
-      ],
-    })
-
+          "type": "function",
+          "function": {
+            "name": "get_fish_holders",
+            "description": "Getting wallets that currently holding $FISH token",
+            "parameters": {},
+            "strict": false
+          }
+        }
+      ]
+    });
+    
     const requestOptions = {
-      method: 'POST',
-      mode: 'no-cors',
+      method: "POST",
       headers: myHeaders,
       body: raw,
-      redirect: 'follow',
-    }
-
-    fetch('https://arf-i.vercel.app/api/openai', requestOptions)
-      .then((response) => response.text())
+      redirect: "follow"
+    };
+    
+    fetch("https://arf-i.vercel.app/api/openai", requestOptions)
+      .then((response) => response.json())
       .then((result) => console.log(result))
-      .catch((error) => console.error(error))
+      .catch((error) => console.error(error));
   }
 
   return (

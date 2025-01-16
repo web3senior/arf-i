@@ -1,17 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    async headers() {
+    async rewrites() {
         return [
-            {
-                // matching all API routes
-                source: "/api/:path*",
-                headers: [
-                    // other headers omitted for brevity...
-                    { key: "Access-Control-Allow-Origin", value: "*" }//same-origin
-                ]
-            }
+          {
+            source: '/api/:path*',
+            destination: ':path*',
+          },
         ]
-    }
+      },
 };
 
 export default nextConfig;
