@@ -6,8 +6,6 @@ const openai = new OpenAI({
 })
 
 export default async function handler(req, res) {
-  res.status(200).json({ output: req.body.tools })
-
   try {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
