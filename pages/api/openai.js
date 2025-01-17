@@ -87,6 +87,18 @@ Lukseals is a SAPPY SEALS derivat wich minted almost 3 years ago on ETH. But It 
    Your email address is arf-i@aratta.dev
     `,
   },
+    {
+    role: 'system',
+    content: `
+  you know annelisa her bio: social & mktg 
+@lukso_io
+ + 
+@luksofoundation
+ 💕 || web3 hackathons 
+@buidlbox
+ 🌱 || also a dj
+    `,
+  },
 ]
 
 let tools = [
@@ -102,7 +114,7 @@ let tools = [
     type: 'function',
     function: {
       name: 'search_profile',
-      description: 'search and find profile by a name or wallet address with 42 character length start with 0x like 0x6f77D2853dC02e1cF6fF5AF17040B3b6abBD2dca and make it precise',
+      description: 'search and find profiles by a name or wallet address with 42 character length start with 0x like 0x6f77D2853dC02e1cF6fF5AF17040B3b6abBD2dca and make it precise',
       parameters: {
         type: 'object',
         properties: {
