@@ -20,6 +20,7 @@ export default function Home() {
     e.preventDefault()
 
     const q = inputRef.current.value
+    if (q === '') return
 
     let newData = data.list
     newData.push({ type: `q`, content: q })
@@ -83,7 +84,9 @@ export default function Home() {
       <header className={styles.header}>
         <div>
           <div>
-            <b>{process.env.NEXT_PUBLIC_NAME} <small className={`text-danger`}>BETA</small></b>
+            <b>
+              {process.env.NEXT_PUBLIC_NAME} <small className={`text-danger`}>BETA</small>
+            </b>
             <small>Powered by $FISH</small>
           </div>
           <Image aria-hidden src="/icon-arrow-down.svg" alt="Globe icon" width={16} height={16} />
@@ -100,7 +103,7 @@ export default function Home() {
       <main className={styles.main}>
         {data.list.length === 0 && (
           <>
-            <Image className={styles.hero} src="/arfi.png" alt="Next.js logo" width={363} height={363} priority />
+            <Image className={styles.hero} src="/arfi.png" alt="Next.js logo" width={240} height={240} priority />
             <h1 className={`text-center`}>Hi there</h1>
           </>
         )}
