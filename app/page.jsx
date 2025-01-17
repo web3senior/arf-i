@@ -113,7 +113,7 @@ export default function Home() {
             data.list.map((item, i) => {
               return (
                 <div key={i} className={`${styles.message} ms-motion-slideDownIn`} data-message-type={item.type}>
-                  {item.type === `a` && <Image className={styles.logo} src={`/arf-i-pfp.png`} alt="pfp" width={54} height={54} priority />}
+                  {item.type === `a` && <Image className={styles.logo} src={`/arf-i-pfp.png`} alt="pfp" width={48} height={48} priority />}
                   <div className={`${styles.message__content}`} data-message-type={item.type} id="typewriter">
                     <Markdown>{item.content}</Markdown>
                   </div>
@@ -124,7 +124,7 @@ export default function Home() {
           {isLoading && (
             <>
               <div className={`${styles.message} ms-motion-slideDownIn`} data-message-type={`a`}>
-                <Image className={styles.logo} src={`/arf-i-pfp.png`} alt="pfp" width={54} height={54} priority />
+                <Image className={styles.logo} src={`/arf-i-pfp.png`} alt="pfp" width={48} height={48} priority />
                 <div className={`${styles.message__content}`} data-message-type={`a`}>
                   <Markdown>Just a sec...</Markdown>
                 </div>
