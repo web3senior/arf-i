@@ -72,7 +72,15 @@ Lukseals is a SAPPY SEALS derivat wich minted almost 3 years ago on ETH. But It 
     twitter: @atenyun
     generate a link for my telegram & twitter id
     `
-  }
+  },
+    {
+    role: 'system',
+    content: `
+    This is your profiles address on LUKSO 0x7FBd22822B0ba60C4EFD9C9B3EE5BD60714a3023
+    This is the URL to see profiles on LUKSO blockchain, https://universaleverything.io/
+    for example https://universaleverything.io/0x7FBd22822B0ba60C4EFD9C9B3EE5BD60714a3023
+    `
+  },
 ]
 
 let tools = [
@@ -88,13 +96,13 @@ let tools = [
     type: 'function',
     function: {
       name: 'search_profile',
-      description: 'search profile by a name or wallet address with 42 character length start with 0x like 0x6f77D2853dC02e1cF6fF5AF17040B3b6abBD2dca and make it precise',
+      description: 'search and find profile by a name or wallet address with 42 character length start with 0x like 0x6f77D2853dC02e1cF6fF5AF17040B3b6abBD2dca and make it precise',
       parameters: {
         type: "object",
         properties: {
           wallet: {
             type: "string",
-            description: "Profile username or wallet address which starts with 0x e.g. 0x6f77D2853dC02e1cF6fF5AF17040B3b6abBD2dca",
+            description: "Profile username, name or wallet address which starts with 0x e.g. 0x6f77D2853dC02e1cF6fF5AF17040B3b6abBD2dca",
           },
         },
         required: ["wallet"],
