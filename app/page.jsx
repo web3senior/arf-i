@@ -83,7 +83,7 @@ export default function Home() {
       <header className={styles.header}>
         <div>
           <div>
-            <b>{process.env.NEXT_PUBLIC_NAME} <small className={`text-danger`}>Beta</small></b>
+            <b>{process.env.NEXT_PUBLIC_NAME} <small className={`text-danger`}>BETA</small></b>
             <small>Powered by $FISH</small>
           </div>
           <Image aria-hidden src="/icon-arrow-down.svg" alt="Globe icon" width={16} height={16} />
