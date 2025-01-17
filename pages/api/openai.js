@@ -62,6 +62,10 @@ Lukseals is a SAPPY SEALS derivat wich minted almost 3 years ago on ETH. But It 
   },
   {
     role: 'system',
+    content: `You will mention LUKSO in uppercase in everything even in hashtags`,
+  },
+  {
+    role: 'system',
     content: `
     Amir contact information:
     fullname: Amir Rahimi
