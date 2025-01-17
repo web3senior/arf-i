@@ -57,7 +57,7 @@ export default function Home() {
     fetch('/api/openai', requestOptions)
       .then((response) => response.json())
       .then((result) => {
-        // console.log(result)
+        console.log(result)
 
         let newData = data.list
         newData.push({ type: `a`, content: result.output.content })

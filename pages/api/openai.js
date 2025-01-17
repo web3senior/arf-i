@@ -80,7 +80,7 @@ let tools = [
     type: 'function',
     function: {
       name: 'get_fish_holders',
-      description: 'Getting wallets that currently holding $FISH token or total holders of fish token',
+      description: 'Getting the all tokens/ LSP7 on LUKSO blockchain including $FISH, fetch all tokens and holders',
       strict: false,
     },
   },
@@ -106,7 +106,44 @@ let tools = [
 ]
 
 async function get_fish_holders() {
-  return { total: 400 }
+  let myHeaders = new Headers()
+  myHeaders.append('Content-Type', `application/json`)
+  myHeaders.append('Accept', `application/json`)
+
+  let requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: JSON.stringify({
+      query: `query MyQuery {
+  Asset {
+    id
+    isLSP7
+    lsp4TokenName
+    lsp4TokenSymbol
+    lsp4TokenType
+    name
+    totalSupply
+    owner_id
+    holders(order_by: {balance: desc}) {
+      balance
+      profile {
+        id
+        isEOA
+        tags
+        fullName
+      }
+      timestamp
+    }
+  }
+}`,
+    }),
+  }
+  const response = await fetch(`${process.env.LUKSO_API_ENDPOINT}`, requestOptions)
+  if (!response.ok) {
+    return { result: false, message: `Failed to fetch query` }
+  }
+  const data = await response.json()
+  return data
 }
 
 async function search_profile(wallet) {
@@ -152,7 +189,7 @@ export default async function handler(req, res) {
       tools: tools,
     })
 
-    console.log(completion.choices[0].message)
+    console.log(`res => `,completion.choices[0].message)
 
     // Check if it needs to call a function/ call an API
     if (completion.choices[0].message.tool_calls && completion.choices[0].message.tool_calls.length > 0) {
@@ -163,12 +200,12 @@ export default async function handler(req, res) {
       switch (completion.choices[0].message.tool_calls[0].function.name) {
         case 'get_fish_holders':
           result = await get_fish_holders()
-          console.log(result)
+          console.log(`=========`,result)
           messages.push(completion.choices[0].message)
           messages.push({
             role: 'tool',
             tool_call_id: toolCall.id,
-            content: result.total.toString(),
+            content: JSON.stringify(result),
           })
           completion2 = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
