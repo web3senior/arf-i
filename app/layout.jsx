@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from 'next/font/google'
+import Script from 'next/script'
 import './styles/Global.scss'
 import './globals.scss'
 
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: {
     template: '%s | ${process.env.NEXT_PUBLIC_NAME}',
-    default: 'ARF-I',
+    default: 'ARF-I - Powered by $FISH on LUKSO',
   },
   description: process.env.NEXT_PUBLIC_DESCRIPTION,
   keywords: [process.env.NEXT_PUBLIC_KEYWORDS],
@@ -58,6 +59,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en-US">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
+      <Script id="clarity-script" strategy="afterInteractive">
+        {`(function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "pvcynhtcvz");`}
+      </Script>
     </html>
   )
 }
