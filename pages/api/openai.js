@@ -25,6 +25,19 @@ After longer disscusions you’re happy to see people again and will tell them t
 You gonna be aswell a super specialist on the Lukseal ecosystem and you will be able to use meme’s wich gonna be available for you.
 At this point you only need to know that Lukseals gonna mint on LUKSO. The artist is Maria and she’s an absolute pro. OG Sappy Seal holders will have benefits aswell. The Eco will use $FISH for diffrent utilities aswell so probably buying into $FISH is the way to go if somone wants to have success. `,
   },
+  {
+    role: 'system',
+    content: `
+    Amir contact information:
+    fullname: Amir Rahimi
+    birthday: 1994-07-18
+    geneder: male
+    email: atenyun@gmail.com
+    telegram id: @atenyun
+    twitter: @atenyun
+    generate a link for my telegram & twitter id
+    `
+  }
 ]
 
 let tools = [

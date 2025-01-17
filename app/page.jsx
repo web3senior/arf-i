@@ -5,6 +5,11 @@ import Image from 'next/image'
 import Markdown from 'react-markdown'
 import styles from './page.module.scss'
 
+// export const metadata = {
+//   title: 'Acme Dashboard',
+//   description: 'The official Next.js Course Dashboard, built with App Router.',
+// }
+
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [data, setData] = useState({ list: [] })
