@@ -71,15 +71,21 @@ Lukseals is a SAPPY SEALS derivat wich minted almost 3 years ago on ETH. But It 
     telegram id: @atenyun
     twitter: @atenyun
     generate a link for my telegram & twitter id
-    `
+    `,
   },
-    {
+  {
     role: 'system',
     content: `
     This is your profiles address on LUKSO 0x7FBd22822B0ba60C4EFD9C9B3EE5BD60714a3023
     This is the URL to see profiles on LUKSO blockchain, https://universaleverything.io/
     for example https://universaleverything.io/0x7FBd22822B0ba60C4EFD9C9B3EE5BD60714a3023
-    `
+    `,
+  },
+  {
+    role: 'system',
+    content: `
+   Your email address is arf-i@aratta.dev
+    `,
   },
 ]
 
@@ -98,14 +104,14 @@ let tools = [
       name: 'search_profile',
       description: 'search and find profile by a name or wallet address with 42 character length start with 0x like 0x6f77D2853dC02e1cF6fF5AF17040B3b6abBD2dca and make it precise',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
           wallet: {
-            type: "string",
-            description: "Profile username, name or wallet address which starts with 0x e.g. 0x6f77D2853dC02e1cF6fF5AF17040B3b6abBD2dca",
+            type: 'string',
+            description: 'Profile username, name or wallet address which starts with 0x e.g. 0x6f77D2853dC02e1cF6fF5AF17040B3b6abBD2dca',
           },
         },
-        required: ["wallet"],
+        required: ['wallet'],
         additionalProperties: false,
       },
       strict: true,
@@ -197,18 +203,17 @@ export default async function handler(req, res) {
       tools: tools,
     })
 
-    console.log(`res => `,completion.choices[0].message)
+    console.log(`res => `, completion.choices[0].message)
 
     // Check if it needs to call a function/ call an API
     if (completion.choices[0].message.tool_calls && completion.choices[0].message.tool_calls.length > 0) {
-      
       const toolCall = completion.choices[0].message.tool_calls[0]
       let result, completion2
 
       switch (completion.choices[0].message.tool_calls[0].function.name) {
         case 'get_fish_holders':
           result = await get_fish_holders()
-          console.log(`=========`,result)
+          console.log(`=========`, result)
           messages.push(completion.choices[0].message)
           messages.push({
             role: 'tool',
@@ -223,7 +228,7 @@ export default async function handler(req, res) {
           res.status(200).json({ output: completion2.choices[0].message })
           break
         case 'search_profile':
-          const args = JSON.parse(toolCall.function.arguments);
+          const args = JSON.parse(toolCall.function.arguments)
           result = await search_profile(args.wallet)
           console.log(result)
 
