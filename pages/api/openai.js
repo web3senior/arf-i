@@ -115,7 +115,7 @@ async function get_fish_holders() {
     headers: myHeaders,
     body: JSON.stringify({
       query: `query MyQuery {
-  Asset {
+  Asset(where: {id: {_eq: "0xf76253bddf123543716092e77fc08ba81d63ff38"}}) {
     id
     isLSP7
     lsp4TokenName
