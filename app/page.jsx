@@ -85,7 +85,7 @@ export default function Home() {
         <div>
           <div>
             <b>
-              {process.env.NEXT_PUBLIC_NAME} <small className={`text-danger`}>BETA</small>
+              {process.env.NEXT_PUBLIC_NAME} <small className={`text-primary`}>BETA</small>
             </b>
             <small>Powered by $FISH</small>
           </div>
@@ -96,7 +96,7 @@ export default function Home() {
           <a href={`https://universalswaps.io/tokens/lukso/0xf76253Bddf123543716092E77FC08Ba81D63Ff38`} target="_blank" rel="noopener noreferrer">
             Swap $FISH
           </a>
-          <Image aria-hidden src="/logo.svg" alt="Globe icon" width={32} height={32} />
+          <Image aria-hidden src="/logo.svg" alt="Globe icon" width={48} height={48} />
         </div>
       </header>
 
