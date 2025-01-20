@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import Web3 from 'web3'
 
 const openai = new OpenAI({
   dangerouslyAllowBrowser: false,
@@ -98,7 +99,7 @@ If people ask you about lukso ecosystem you know all the known projects like chi
    Your email address is arf-i@aratta.dev
     `,
   },
-    {
+  {
     role: 'system',
     content: `
   you know annelisa her bio: social & mktg 
@@ -116,8 +117,19 @@ let tools = [
   {
     type: 'function',
     function: {
-      name: 'get_fish_holders',
-      description: 'Getting the all tokens/ LSP7 on LUKSO blockchain including $FISH, fetch all tokens and holders',
+      name: 'get_lsp7',
+      description: 'search tokens info, holders, whales by contract address. Convert numbers from WEI to ETH',
+      parameters: {
+        type: 'object',
+        properties: {
+          contract: {
+            type: 'string',
+            description: 'Starts with 0x e.g. 0xf76253bddf123543716092e77fc08ba81d63ff38',
+          },
+        },
+        required: ['contract'],
+        additionalProperties: false,
+      },
       strict: false,
     },
   },
@@ -142,7 +154,8 @@ let tools = [
   },
 ]
 
-async function get_fish_holders() {
+async function get_lsp7(contract) {
+  console.log(contract)
   let myHeaders = new Headers()
   myHeaders.append('Content-Type', `application/json`)
   myHeaders.append('Accept', `application/json`)
@@ -152,7 +165,7 @@ async function get_fish_holders() {
     headers: myHeaders,
     body: JSON.stringify({
       query: `query MyQuery {
-  Asset(where: {id: {_eq: "0xf76253bddf123543716092e77fc08ba81d63ff38"}}) {
+  Asset(where: {id: {_eq: "${contract.toLowerCase()}"}}) {
     id
     isLSP7
     lsp4TokenName
@@ -161,7 +174,7 @@ async function get_fish_holders() {
     name
     totalSupply
     owner_id
-    holders(order_by: {balance: desc}) {
+    holders(order_by: {balance: desc}, limit: 50) {
       balance
       profile {
         id
@@ -180,6 +193,16 @@ async function get_fish_holders() {
     return { result: false, message: `Failed to fetch query` }
   }
   const data = await response.json()
+
+  // Conver numbers from wei to eth
+  if (data.data.Asset[0].totalSupply) {
+    data.data.Asset[0].totalSupply = Web3.utils.fromWei(data.data.Asset[0].totalSupply, `ether`)
+
+    data.data.Asset[0].holders.forEach((element, i) => {
+      data.data.Asset[0].holders[i].balance = Web3.utils.fromWei(element.balance, `ether`)
+    })
+  }
+
   return data
 }
 
@@ -231,11 +254,12 @@ export default async function handler(req, res) {
     // Check if it needs to call a function/ call an API
     if (completion.choices[0].message.tool_calls && completion.choices[0].message.tool_calls.length > 0) {
       const toolCall = completion.choices[0].message.tool_calls[0]
-      let result, completion2
+      let result, completion2, args
 
       switch (completion.choices[0].message.tool_calls[0].function.name) {
-        case 'get_fish_holders':
-          result = await get_fish_holders()
+        case 'get_lsp7':
+          args = JSON.parse(toolCall.function.arguments)
+          result = await get_lsp7(args.contract)
           console.log(`=========`, result)
           messages.push(completion.choices[0].message)
           messages.push({
@@ -251,7 +275,7 @@ export default async function handler(req, res) {
           res.status(200).json({ output: completion2.choices[0].message })
           break
         case 'search_profile':
-          const args = JSON.parse(toolCall.function.arguments)
+          args = JSON.parse(toolCall.function.arguments)
           result = await search_profile(args.wallet)
           console.log(result)
 
