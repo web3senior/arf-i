@@ -117,6 +117,25 @@ let tools = [
   {
     type: 'function',
     function: {
+      name: 'get_total_holder',
+      description: 'Count of token holders. Total holders of a token',
+      parameters: {
+        type: 'object',
+        properties: {
+          contract: {
+            type: 'string',
+            description: 'Starts with 0x e.g. 0xf76253bddf123543716092e77fc08ba81d63ff38. Default value is 0xf76253bddf123543716092e77fc08ba81d63ff38',
+          },
+        },
+        required: ['contract'],
+        additionalProperties: false,
+      },
+      strict: false,
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name: 'get_lsp7',
       description: 'search tokens info, holders, whales by contract address. Convert numbers from WEI to ETH',
       parameters: {
@@ -154,6 +173,49 @@ let tools = [
   },
 ]
 
+async function get_total_holder(contract) {
+  console.log(contract)
+  let myHeaders = new Headers()
+  myHeaders.append('Content-Type', `application/json`)
+  myHeaders.append('Accept', `application/json`)
+
+  let requestOptions = {
+    method: 'POST',
+    headers: myHeaders,
+    body: JSON.stringify({
+      query: `query MyQuery {
+  Asset(where: {id: {_eq: "${contract.toLowerCase()}"}}) {
+    id
+    isLSP7
+    lsp4TokenName
+    lsp4TokenSymbol
+    lsp4TokenType
+    name
+    totalSupply
+    owner_id
+    holders(order_by: {balance: desc}) {
+      balance
+    }
+    createdTimestamp
+  }
+}`,
+    }),
+  }
+
+  const response = await fetch(`${process.env.LUKSO_API_ENDPOINT}`, requestOptions)
+  if (!response.ok) {
+    return { result: false, message: `Failed to fetch query` }
+  }
+  const data = await response.json()
+
+  // Conver numbers from wei to eth
+  if (data.data.Asset[0].holders) {
+    return { result: true, total: data.data.Asset[0].holders.length }
+  }
+
+  return { result: false, message: `Failed to fetch query` }
+}
+
 async function get_lsp7(contract) {
   console.log(contract)
   let myHeaders = new Headers()
@@ -174,7 +236,7 @@ async function get_lsp7(contract) {
     name
     totalSupply
     owner_id
-    holders(order_by: {balance: desc}, limit: 50) {
+    holders(order_by: {balance: desc}, limit: 10) {
       balance
       profile {
         id
@@ -188,6 +250,7 @@ async function get_lsp7(contract) {
 }`,
     }),
   }
+
   const response = await fetch(`${process.env.LUKSO_API_ENDPOINT}`, requestOptions)
   if (!response.ok) {
     return { result: false, message: `Failed to fetch query` }
@@ -260,7 +323,24 @@ export default async function handler(req, res) {
         case 'get_lsp7':
           args = JSON.parse(toolCall.function.arguments)
           result = await get_lsp7(args.contract)
-          console.log(`=========`, result)
+          console.log(`get_lsp7 => `, result)
+          messages.push(completion.choices[0].message)
+          messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: JSON.stringify(result),
+          })
+          completion2 = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages,
+            tools,
+          })
+          res.status(200).json({ output: completion2.choices[0].message })
+          break
+        case 'get_total_holder':
+          args = JSON.parse(toolCall.function.arguments)
+          result = await get_total_holder(args.contract)
+          console.log(`getTotalHolder => `, result)
           messages.push(completion.choices[0].message)
           messages.push({
             role: 'tool',
