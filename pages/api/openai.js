@@ -1,5 +1,7 @@
 import OpenAI from 'openai'
 import Web3 from 'web3'
+import LSP7ABI from '../../app/abi/lsp7.json'
+import { ethers } from 'ethers'
 
 const openai = new OpenAI({
   dangerouslyAllowBrowser: false,
@@ -87,33 +89,41 @@ If people ask you about lukso ecosystem you know all the known projects like chi
   },
   {
     role: 'system',
-    content: `
-    This is your profiles address on LUKSO 0x7FBd22822B0ba60C4EFD9C9B3EE5BD60714a3023
+    content: `This is your profile address on LUKSO 0x7FBd22822B0ba60C4EFD9C9B3EE5BD60714a3023
     This is the URL to see profiles on LUKSO blockchain, https://universaleverything.io/
-    for example https://universaleverything.io/0x7FBd22822B0ba60C4EFD9C9B3EE5BD60714a3023
-    `,
+    for example https://universaleverything.io/0x7FBd22822B0ba60C4EFD9C9B3EE5BD60714a3023`,
   },
   {
     role: 'system',
-    content: `
-   Your email address is arf-i@aratta.dev
-    `,
+    content: `Your email address is arf-i@aratta.dev`,
   },
   {
     role: 'system',
-    content: `
-  you know annelisa her bio: social & mktg 
-@lukso_io
- + 
-@luksofoundation
- 💕 || web3 hackathons 
-@buidlbox
- 🌱 || also a dj
-    `,
+    content: `you know annelisa her bio: social & mktg @lukso_io + @luksofoundation 💕 || web3 hackathons @buidlbox 🌱 || also a dj`,
   },
 ]
 
 let tools = [
+  {
+    type: 'function',
+    function: {
+      name: 'airdrop_fish',
+      description: `send fish if user sends a secret phrase "ai on lukso" and confirm its wallet address. send that I'm waiting for the transaction confirmation. you create a link for the transaction hash https://explorer.execution.testnet.lukso.network/tx/[HASH]`,
+      parameters: {
+        type: 'object',
+        properties: {
+          wallet: {
+            type: 'string',
+            description: `The connected user wallet address Starts with 0x . 
+            if its null ask user to connect wallet`,
+          },
+        },
+        required: ['wallet'],
+        additionalProperties: false,
+      },
+      strict: false,
+    },
+  },
   {
     type: 'function',
     function: {
@@ -172,6 +182,55 @@ let tools = [
     },
   },
 ]
+
+async function airdrop_fish(wallet) {
+  console.log(wallet)
+  const RPC_ENDPOINT = 'https://rpc.mainnet.lukso.network'
+  const web3 = new Web3(RPC_ENDPOINT)
+  const privateKey = '0xf8ede5f13b521b2b97939b657c1b1afc4ee3c1185d644b4451b995e5eb3763d0'
+  const account = web3.eth.accounts.privateKeyToAccount(privateKey)
+
+  const fishToken = new web3.eth.Contract(
+    LSP7ABI,
+    '0xf76253bddf123543716092e77fc08ba81d63ff38' //  Token contract address
+  )
+
+  console.log(web3.utils.fromWei(await fishToken.methods.balanceOf(wallet).call(), `ether`))
+
+  try {
+    const sendAbi = fishToken.methods
+      .transfer(
+        account.address, // (from) sender address (= our Universal Profile)
+        wallet, // (to) recipient's address e.g. arattalabs  0x000
+        web3.utils.toWei(10, `ether`), // (amount) of tokens to transfer (CHILL have 18 decimals)
+        true, // (force) flag, false to only allow contract with a Universal Receiver, true for any address (EOA or any contract)
+        '0x' // (data) any additional data to send alongside the transfer
+      )
+      .encodeABI()
+
+    const signature = await web3.eth.accounts.signTransaction(
+      {
+        from: account.address, // Operation type: CALL
+        to: '0xf76253bddf123543716092e77fc08ba81d63ff38', // Recipient
+        gasPrice: 576624148,
+        data: sendAbi,
+      },
+      privateKey
+    )
+
+    const res = await web3.eth.sendSignedTransaction(signature.rawTransaction)
+    // .on('transactionHash', function (hash) {
+    //   return { result: true, data: `Here is the transaction hash ${JSON.stringify(hash)}` }
+    // })
+    // .then(function (receipt) {
+    //   return { result: true, data: `Here is the transaction info ${JSON.stringify(receipt)}` }
+    // })
+    console.log(res.logs[0].transactionHash)
+    return `Here is the TX hash: ${res.logs[0].transactionHash}`
+  } catch (error) {
+    return { result: false, data: error }
+  }
+}
 
 async function get_total_holder(contract) {
   console.log(contract)
@@ -301,8 +360,11 @@ async function search_profile(wallet) {
 }
 
 export default async function handler(req, res) {
-  console.log(req.body.old_messages)
+  // console.log(req.body.old_messages)
+  // console.log(req.body.profile)
+  messages.push(req.body.profile)
   if (req.body.old_messages.length > 0) messages.push(...req.body.old_messages)
+
   messages.push(req.body.messages)
 
   try {
@@ -320,6 +382,23 @@ export default async function handler(req, res) {
       let result, completion2, args
 
       switch (completion.choices[0].message.tool_calls[0].function.name) {
+        case 'airdrop_fish':
+          args = JSON.parse(toolCall.function.arguments)
+          result = await airdrop_fish(args.wallet)
+          console.log(`airdrop_fish => `, result)
+          messages.push(completion.choices[0].message)
+          messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: JSON.stringify(result),
+          })
+          completion2 = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages,
+            tools,
+          })
+          res.status(200).json({ output: completion2.choices[0].message })
+          break
         case 'get_lsp7':
           args = JSON.parse(toolCall.function.arguments)
           result = await get_lsp7(args.contract)

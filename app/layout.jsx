@@ -1,6 +1,10 @@
 import { Geist, Geist_Mono } from 'next/font/google'
 import Script from 'next/script'
+import { Toaster } from 'react-hot-toast'
+import { AuthProvider } from './contexts/AuthContext'
+
 import './styles/Global.scss'
+import './GoogleFont.css'
 import './globals.scss'
 
 const geistSans = Geist({
@@ -58,7 +62,10 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en-US">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body>
+      <body className={`${geistSans.variable} ${geistMono.variable} ms-Fabric`}>
+        <Toaster />
+        <AuthProvider>{children}</AuthProvider>
+      </body>
       <Script id="clarity-script" strategy="afterInteractive">
         {`(function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
