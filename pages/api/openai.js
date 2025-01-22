@@ -184,6 +184,7 @@ let tools = [
 ]
 
 async function airdrop_fish(wallet) {
+  return { result: false, data: `Airdrop will be active soon, check later` }
   console.log(wallet)
   const RPC_ENDPOINT = 'https://rpc.mainnet.lukso.network'
   const web3 = new Web3(RPC_ENDPOINT)
