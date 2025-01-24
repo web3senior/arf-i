@@ -119,7 +119,7 @@ let tools = [
         properties: {
           wallet: {
             type: 'string',
-            description: `Wallet address. Profile address.`,
+            description: `Wallet address. Profile address. If wallet is null ask user to connect the wallet.`,
           },
           secretPhrase: {
             type: 'string',
@@ -193,7 +193,7 @@ let tools = [
 
 async function airdrop_fish(wallet) {
   // Check if user cliamed
-  console.log(wallet)
+  console.log(`wallet => `, wallet)
   const RPC_ENDPOINT = 'https://rpc.mainnet.lukso.network'
   const web3 = new Web3(RPC_ENDPOINT)
   const privateKey = '0xf8ede5f13b521b2b97939b657c1b1afc4ee3c1185d644b4451b995e5eb3763d0'
