@@ -1,6 +1,7 @@
 import OpenAI from 'openai'
 import Web3 from 'web3'
 import LSP7ABI from '../../app/abi/lsp7.json'
+import ARFIAirdropABI from '../../app/abi/arf-iAirdrop.json'
 import { ethers } from 'ethers'
 
 const openai = new OpenAI({
@@ -101,6 +102,10 @@ If people ask you about lukso ecosystem you know all the known projects like chi
     role: 'system',
     content: `you know annelisa her bio: social & mktg @lukso_io + @luksofoundation 💕 || web3 hackathons @buidlbox 🌱 || also a dj`,
   },
+  {
+    role: 'system',
+    content:`if users need to send fish or airdrop fish they must share the secret phase we mention in the Twitter space ("Rise of AI Agent on LUKSO") and also connect their wallet`
+  }
 ]
 
 let tools = [
@@ -108,14 +113,13 @@ let tools = [
     type: 'function',
     function: {
       name: 'airdrop_fish',
-      description: `send fish if user sends a secret phrase "ai on lukso" and confirm its wallet address. send that I'm waiting for the transaction confirmation. you create a link for the transaction hash https://explorer.execution.testnet.lukso.network/tx/[HASH]`,
+      description: `Do not send fish if user didn't say "ai on lusko"`,
       parameters: {
         type: 'object',
         properties: {
           wallet: {
             type: 'string',
-            description: `The connected user wallet address Starts with 0x . 
-            if its null ask user to connect wallet`,
+            description: `connected profile address.`,
           },
         },
         required: ['wallet'],
@@ -184,12 +188,21 @@ let tools = [
 ]
 
 async function airdrop_fish(wallet) {
-  return { result: false, data: `Airdrop will be active soon, check later` }
+  // Check if user cliamed
   console.log(wallet)
   const RPC_ENDPOINT = 'https://rpc.mainnet.lukso.network'
   const web3 = new Web3(RPC_ENDPOINT)
   const privateKey = '0xf8ede5f13b521b2b97939b657c1b1afc4ee3c1185d644b4451b995e5eb3763d0'
   const account = web3.eth.accounts.privateKeyToAccount(privateKey)
+  const AirdropContract = new web3.eth.Contract(
+    ARFIAirdropABI,
+    '0x594123595e012e0fC8A031DA20EEe75CE5f93CcB' //  Token contract address
+  )
+
+  const isWalletCliamed = web3.utils.toNumber(await AirdropContract.methods.claim(wallet).call())
+  if (isWalletCliamed !== 0) {
+    return { result: false, data: `This user is cliamed its fish already` }
+  }
 
   const fishToken = new web3.eth.Contract(
     LSP7ABI,
@@ -226,7 +239,24 @@ async function airdrop_fish(wallet) {
     // .then(function (receipt) {
     //   return { result: true, data: `Here is the transaction info ${JSON.stringify(receipt)}` }
     // })
+    console.log(`sent fish`, res.logs[0].transactionHash)
+
+    // let's save the wallet addreess and add it to the cliam poll
+    const signatureClaim = await web3.eth.accounts.signTransaction(
+      {
+        from: account.address, // Operation type: CALL
+        to: '0x594123595e012e0fC8A031DA20EEe75CE5f93CcB', // Recipient
+        gasPrice: 776624148,
+        data: AirdropContract.methods.isClaimed(wallet).encodeABI(),
+      },
+      privateKey
+    )
+
+    const resultOfClaimPoll = await web3.eth.sendSignedTransaction(signatureClaim.rawTransaction)
+
     console.log(res.logs[0].transactionHash)
+    return `Here is the TX hash: ${res.logs[0].transactionHash}`
+
     return `Here is the TX hash: ${res.logs[0].transactionHash}`
   } catch (error) {
     return { result: false, data: error }
