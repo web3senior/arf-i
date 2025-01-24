@@ -106,6 +106,10 @@ If people ask you about lukso ecosystem you know all the known projects like chi
     role: 'system',
     content: `Airdrop for the "Rise of AI  Agent on LUKSO" space on 𝕏 is now active.`,
   },
+  {
+    role: 'system',
+    content: `If user send the secret phrase for airdroping, always say that it will take a while and please be poatinet.`,
+  },
 ]
 
 let tools = [
