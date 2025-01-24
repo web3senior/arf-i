@@ -91,49 +91,6 @@ export default function Home() {
       .catch((error) => console.error(error))
   }
 
-  const handleTestSend = async (e) => {
-    const RPC_ENDPOINT = 'https://rpc.testnet.lukso.network'
-    const web3 = new Web3(RPC_ENDPOINT)
-    const privateKey = '0xf8ede5f13b521b2b97939b657c1b1afc4ee3c1185d644b4451b995e5eb3763d0'
-    const account = web3.eth.accounts.privateKeyToAccount(privateKey)
-    //const myUniversalProfile = new web3.eth.Contract(UniversalProfile.abi, `0x7FBd22822B0ba60C4EFD9C9B3EE5BD60714a3023`)
-    // const keyManagerAddress = await myUniversalProfile.methods.owner().call()
-    //const keyManager = new web3.eth.Contract(KeyManagerContract.abi, keyManagerAddress)
-
-    const fishToken = new web3.eth.Contract(
-      LSP7ABI,
-      '0x39f73b9c8d4e370fd9ff22c932ed58009680aff0' //  Token contract address
-    )
-
-    console.log(web3.utils.fromWei(await fishToken.methods.balanceOf(`0xe4dAc493FC79373936AAba777b58ED60A8eF5834`).call(), `ether`))
-
-    const sendAbi = fishToken.methods
-      .transfer(
-        account.address, // (from) sender address (= our Universal Profile)
-        '0xe4dAc493FC79373936AAba777b58ED60A8eF5834', // (to) recipient's address e.g. arattalabs  0x000
-        web3.utils.toWei(1, `ether`), // (amount) of tokens to transfer (CHILL have 18 decimals)
-        true, // (force) flag, false to only allow contract with a Universal Receiver, true for any address (EOA or any contract)
-        '0x' // (data) any additional data to send alongside the transfer
-      )
-      .encodeABI()
-
-    const signature = await web3.eth.accounts.signTransaction(
-      {
-        from: account.address, // Operation type: CALL
-        to: '0x39f73b9c8d4e370fd9ff22c932ed58009680aff0', // Recipient
-        gasPrice: 500000,
-        data: sendAbi,
-      },
-      privateKey
-    )
-
-    web3.eth.sendSignedTransaction(signature.rawTransaction).on('receipt', async (res) => {
-      console.log(res)
-      // const events = await fishToken.getPastEvents('Transfer', { fromBlock: 0, to: 'latest' })
-      // console.log(events)
-    })
-  }
-
   useEffect(() => {}, [])
 
   return (
