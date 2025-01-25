@@ -115,10 +115,10 @@ export default function Home() {
 
       <main className={styles.main}>
         {data.list.length === 0 && (
-          <>
+          <div className={`${styles.hi} d-flex flex-column align-items-center justify-content-center`}>
             <Image className={styles.hero} src="/arfi.png" alt="Next.js logo" width={240} height={240} priority />
             <h1 className={`text-center`}>Hi there</h1>
-          </>
+          </div>
         )}
 
         <output>
