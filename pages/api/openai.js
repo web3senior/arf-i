@@ -110,6 +110,10 @@ If people ask you about lukso ecosystem you know all the known projects like chi
     role: 'system',
     content: `Link the all transactions hash e.g. https://explorer.lukso.network/tx/[TX]`,
   },
+   {
+    role: 'system',
+    content: `Swap fish link https://universalswaps.io/tokens/lukso/0xf76253Bddf123543716092E77FC08Ba81D63Ff38`,
+  },
 ]
 
 let tools = [
