@@ -117,7 +117,7 @@ let tools = [
     type: 'function',
     function: {
       name: 'airdrop_fish',
-      description: `This function sends fish if user share the secret phrase. secret phrase is "ai on lukso".Do not disclose the secret phrase. Do not send or share or disclose the secret phrase to user. Call this function if user share the secret phrase. User needs to connect wallet`,
+      description: `Send fish if user share the secret phrase.`,
       parameters: {
         type: 'object',
         properties: {
@@ -127,7 +127,7 @@ let tools = [
           },
           secretPhrase: {
             type: 'string',
-            description: `Do not disclose the secret phrase. The string must be exatly "ai on lukso". This is not casesensitive.`,
+            description: `Secret phrase`,
           },
         },
         required: ['wallet', 'secretPhrase'],
@@ -198,9 +198,12 @@ let tools = [
 //  gasLimit: web3.utils.toHex(estimate_gas),
 //  maxPriorityFeePerGas: web3.utils.toHex(suggestion_gas),
 //  maxFeePerGas: web3.utils.toHex(suggestion_gas),
-async function airdrop_fish(wallet) {
-  // Check if user cliamed
+async function airdrop_fish(wallet, secretPhrase) {
   console.log(`wallet => `, wallet)
+  console.log(`secretPhrase => `, secretPhrase)
+  if (secretPhrase.trim().toLowerCase() !== `ai on lukso`) return { result: false, data: `The secret phrase is not correct!` }
+
+
   const RPC_ENDPOINT = 'https://rpc.mainnet.lukso.network'
   const web3 = new Web3(RPC_ENDPOINT)
   const privateKey = '0xf8ede5f13b521b2b97939b657c1b1afc4ee3c1185d644b4451b995e5eb3763d0'
@@ -217,7 +220,7 @@ async function airdrop_fish(wallet) {
   // Check if user is claimed the token already
   const isWalletCliamed = web3.utils.toNumber(await AirdropContract.methods.claim(wallet).call())
   console.log(`isWalletCliamed => `, isWalletCliamed > 0 ? 'yes' : 'no')
-  if (isWalletCliamed !== 0) return { result: false, data: `This user is cliamed its fish already` }
+  if (isWalletCliamed > 0) return { result: false, data: `This user is cliamed its fish already` }
 
   // console.log(web3.utils.fromWei(await fishToken.methods.balanceOf(wallet).call(), `ether`))
 
@@ -425,7 +428,7 @@ export default async function handler(req, res) {
       switch (completion.choices[0].message.tool_calls[0].function.name) {
         case 'airdrop_fish':
           args = JSON.parse(toolCall.function.arguments)
-          result = await airdrop_fish(args.wallet)
+          result = await airdrop_fish(args.wallet, args.secretPhrase)
           console.log(`result of airdrop_fish function => `, result)
           messages.push(completion.choices[0].message)
           messages.push({

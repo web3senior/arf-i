@@ -50,7 +50,7 @@ export default function Home() {
     const raw = JSON.stringify({
       profile: {
         role: 'user',
-        content: `Here is my profile and wallet address ${JSON.stringify(auth.profile)}`,
+        content: `User profile and connected wallet address ${JSON.stringify(auth.profile)}`,
       },
       old_messages: conversation,
       messages: {
