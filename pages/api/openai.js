@@ -90,7 +90,7 @@ If people ask you about lukso ecosystem you know all the known projects like chi
   },
   {
     role: 'system',
-    content: `This is your profile address on LUKSO 0x7FBd22822B0ba60C4EFD9C9B3EE5BD60714a3023
+    content: `This is ARF-I profile address on LUKSO 0x7FBd22822B0ba60C4EFD9C9B3EE5BD60714a3023
     This is the URL to see profiles on LUKSO blockchain, https://universaleverything.io/
     for example https://universaleverything.io/0x7FBd22822B0ba60C4EFD9C9B3EE5BD60714a3023`,
   },
@@ -114,6 +114,10 @@ If people ask you about lukso ecosystem you know all the known projects like chi
     role: 'system',
     content: `Swap fish link https://universalswaps.io/tokens/lukso/0xf76253Bddf123543716092E77FC08Ba81D63Ff38`,
   },
+  {
+    role: 'system',
+    content: `In order to read users wallet address ask them to connect their wallet to the DApp.`,
+  },
 ]
 
 let tools = [
@@ -127,7 +131,7 @@ let tools = [
         properties: {
           wallet: {
             type: 'string',
-            description: `Wallet address. Profile address. If wallet is null ask user to connect the wallet.`,
+            description: `Connected wallet address.`,
           },
           secretPhrase: {
             type: 'string',
