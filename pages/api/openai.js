@@ -225,7 +225,7 @@ async function airdrop_fish(wallet) {
       .transfer(
         account.address, // (from) sender address (= our Universal Profile)
         wallet, // (to) recipient's address e.g. arattalabs  0x000
-        web3.utils.toWei(5000, `ether`), // (amount) of tokens to transfer (CHILL have 18 decimals)
+        web3.utils.toWei(1, `ether`), // (amount) of tokens to transfer (CHILL have 18 decimals)
         true, // (force) flag, false to only allow contract with a Universal Receiver, true for any address (EOA or any contract)
         '0x' // (data) any additional data to send alongside the transfer
       )
