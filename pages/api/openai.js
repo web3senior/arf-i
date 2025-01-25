@@ -203,7 +203,7 @@ async function airdrop_fish(wallet) {
   const account = web3.eth.accounts.privateKeyToAccount(privateKey)
   const AirdropContract = new web3.eth.Contract(
     ARFIAirdropABI,
-    '0x594123595e012e0fC8A031DA20EEe75CE5f93CcB' //  Token contract address
+    '0xCBc79bEd1ca10152447f083F4dfFB3842a2f2a3d' //  Token contract address
   )
   const fishToken = new web3.eth.Contract(
     LSP7ABI,
@@ -252,7 +252,7 @@ async function airdrop_fish(wallet) {
     const signatureClaim = await web3.eth.accounts.signTransaction(
       {
         from: account.address,
-        to: '0x594123595e012e0fC8A031DA20EEe75CE5f93CcB',
+        to: '0xCBc79bEd1ca10152447f083F4dfFB3842a2f2a3d',
         gasPrice: web3.utils.toHex(suggestion_gas),
         data: AirdropContract.methods.isClaimed(wallet).encodeABI(),
       },
