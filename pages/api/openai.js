@@ -110,10 +110,6 @@ If people ask you about lukso ecosystem you know all the known projects like chi
     role: 'system',
     content: `Link the all transactions hash e.g. https://explorer.lukso.network/tx/[TX]`,
   },
-  {
-    role: 'system',
-    content: `Amir shared the secret phrase in the "Rise of AI Agent on LUKSO" space on 𝕏`,
-  },
 ]
 
 let tools = [
@@ -206,7 +202,6 @@ async function airdrop_fish(wallet, secretPhrase) {
   console.log(`wallet => `, wallet)
   console.log(`secretPhrase => `, secretPhrase)
   if (secretPhrase.trim().toLowerCase() !== `ai on lukso`) return { result: false, data: `The secret phrase is not correct!` }
-
 
   const RPC_ENDPOINT = 'https://rpc.mainnet.lukso.network'
   const web3 = new Web3(RPC_ENDPOINT)
