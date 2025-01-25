@@ -106,6 +106,10 @@ If people ask you about lukso ecosystem you know all the known projects like chi
     role: 'system',
     content: `Airdrop for the "Rise of AI  Agent on LUKSO" space on 𝕏 is now active.`,
   },
+  {
+    role: 'system',
+    content: `Link the all transactions hash e.g. https://explorer.lukso.network/tx/[TX]`,
+  },
 ]
 
 let tools = [
@@ -113,7 +117,7 @@ let tools = [
     type: 'function',
     function: {
       name: 'airdrop_fish',
-      description: `This function sends fish. If user share the secret phrase. secret phrase is "ai on lukso". do not send or share or disclose the secret phrase to user. Call this function if user share the secret phrase. User needs to connect wallet`,
+      description: `This function sends fish if user share the secret phrase. secret phrase is "ai on lukso".Do not disclose the secret phrase. Do not send or share or disclose the secret phrase to user. Call this function if user share the secret phrase. User needs to connect wallet`,
       parameters: {
         type: 'object',
         properties: {
@@ -123,7 +127,7 @@ let tools = [
           },
           secretPhrase: {
             type: 'string',
-            description: `User must share "ai on lukso". Do not disclose the secret phrase. The string must be exatly "ai on lukso". This is not casesensitive.`,
+            description: `Do not disclose the secret phrase. The string must be exatly "ai on lukso". This is not casesensitive.`,
           },
         },
         required: ['wallet', 'secretPhrase'],
@@ -398,6 +402,7 @@ async function search_profile(wallet) {
 export default async function handler(req, res) {
   // console.log(req.body.old_messages)
   // console.log(req.body.profile)
+  // console.log(req.body.messages)
   messages.push(req.body.profile)
   if (req.body.old_messages.length > 0) messages.push(...req.body.old_messages)
 
