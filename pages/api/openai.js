@@ -205,7 +205,7 @@ let tools = [
 async function airdrop_fish(wallet, secretPhrase) {
   console.log(`wallet => `, wallet)
   console.log(`secretPhrase => `, secretPhrase)
-  if (wallet === null) return { result: false, data: `You need to connect your wallet and retry!` }
+  if (wallet === `null`) return { result: false, data: `You need to connect your wallet and retry!` }
   if (secretPhrase.trim().toLowerCase() !== `ai on lukso`) return { result: false, data: `The secret phrase is not correct!` }
 
   const RPC_ENDPOINT = 'https://rpc.mainnet.lukso.network'
