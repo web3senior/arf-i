@@ -127,7 +127,7 @@ let tools = [
           },
           secretPhrase: {
             type: 'string',
-            description: `Secret phrase`,
+            description: `Secret phrase. Length must be 11`,
           },
         },
         required: ['wallet', 'secretPhrase'],
