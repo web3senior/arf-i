@@ -121,7 +121,7 @@ export function AuthProvider({ children }) {
       if (account !== undefined) {
         setWallet(account)
         getBalance(account).then((balance) => setBalance(balance))
-        localStorage.setItem(`wallet`, account)
+        // localStorage.setItem(`wallet`, account)
         setLoading(false)
         fetchProfile(account).then((res) => {
           res.wallet = account
