@@ -1,13 +1,15 @@
 import OpenAI from 'openai'
 import Web3 from 'web3'
 import LSP7ABI from '../../app/abi/lsp7.json'
-import ARFIAirdropABI from '../../app/abi/arf-iAirdrop.json'
+import ARFIAirdropABI from '../../app/abi/airdrop.json'
 import { ethers } from 'ethers'
 
 const openai = new OpenAI({
   dangerouslyAllowBrowser: false,
   apiKey: process.env.OPENAI_API_KEY,
 })
+
+const airdropContractAddress = '0x69a7373E94fE85256f104Bf327b6D3d9ca81c08E'
 
 let messages = [
   {
@@ -104,7 +106,7 @@ If people ask you about lukso ecosystem you know all the known projects like chi
   },
   {
     role: 'system',
-    content: `Airdrop for the "Rise of AI  Agent on LUKSO" space on 𝕏 is now active.`,
+    content: `Airdrop is active.`,
   },
   {
     role: 'system',
@@ -117,6 +119,10 @@ If people ask you about lukso ecosystem you know all the known projects like chi
   {
     role: 'system',
     content: `In order to read users wallet address ask them to connect their wallet to the DApp.`,
+  },
+  {
+    role: 'system',
+    content: `Sending fish take a whilte, tell users be patinet.`,
   },
 ]
 
@@ -202,10 +208,7 @@ let tools = [
     },
   },
 ]
-//gasPrice: web3.utils.toHex(suggestion_gas),
-//  gasLimit: web3.utils.toHex(estimate_gas),
-//  maxPriorityFeePerGas: web3.utils.toHex(suggestion_gas),
-//  maxFeePerGas: web3.utils.toHex(suggestion_gas),
+
 async function airdrop_fish(wallet, secretPhrase) {
   console.log(`wallet => `, wallet)
   console.log(`secretPhrase => `, secretPhrase)
@@ -216,68 +219,29 @@ async function airdrop_fish(wallet, secretPhrase) {
   const web3 = new Web3(RPC_ENDPOINT)
   const privateKey = '0xf8ede5f13b521b2b97939b657c1b1afc4ee3c1185d644b4451b995e5eb3763d0'
   const account = web3.eth.accounts.privateKeyToAccount(privateKey)
-  const AirdropContract = new web3.eth.Contract(
-    ARFIAirdropABI,
-    '0xCBc79bEd1ca10152447f083F4dfFB3842a2f2a3d' //  Token contract address
-  )
-  const fishToken = new web3.eth.Contract(
-    LSP7ABI,
-    '0xf76253bddf123543716092e77fc08ba81d63ff38' //  Token contract address
-  )
+  const airdropContract = new web3.eth.Contract(ARFIAirdropABI, airdropContractAddress)
+  const tokenToAirdrop = new web3.eth.Contract(LSP7ABI, '0x39f73b9c8d4e370fd9ff22c932ed58009680aff0')
 
   // Check if user is claimed the token already
-  const isWalletCliamed = web3.utils.toNumber(await AirdropContract.methods.claim(wallet).call())
+  const isWalletCliamed = web3.utils.toNumber(await airdropContract.methods.claimed(wallet).call())
   console.log(`isWalletCliamed => `, isWalletCliamed > 0 ? 'yes' : 'no')
   if (isWalletCliamed > 0) return { result: false, data: `This user is cliamed its fish already` }
-
-  // console.log(web3.utils.fromWei(await fishToken.methods.balanceOf(wallet).call(), `ether`))
-
+  // console.log(await tokenToAirdrop.methods.balanceOf(airdropContractAddress).call(), `ether`))
   try {
     const suggestion_gas = await web3.eth.getGasPrice()
-
-    const signature = await web3.eth.accounts.signTransaction(
-      {
-        from: account.address,
-        to: '0xf76253bddf123543716092e77fc08ba81d63ff38',
-        gasPrice: web3.utils.toHex(suggestion_gas),
-        data: fishToken.methods
-          .transfer(
-            account.address, // (from) sender address (= our Universal Profile)
-            wallet, // (to) recipient's address e.g. arattalabs  0x000
-            web3.utils.toWei(5000, `ether`), // (amount) of tokens to transfer (CHILL have 18 decimals)
-            true, // (force) flag, false to only allow contract with a Universal Receiver, true for any address (EOA or any contract)
-            '0x' // (data) any additional data to send alongside the transfer
-          )
-          .encodeABI(),
-      },
-      privateKey
-    )
-
-    const res = await web3.eth.sendSignedTransaction(signature.rawTransaction)
-
-    // .on('transactionHash', function (hash) {
-    //   return { result: true, data: `Here is the transaction hash ${JSON.stringify(hash)}` }
-    // })
-    // .then(function (receipt) {
-    //   return { result: true, data: `Here is the transaction info ${JSON.stringify(receipt)}` }
-    // })
-    console.log(`sent fish`, res.logs[0].transactionHash)
-
-    // let's save the wallet addreess and add it to the cliam poll
     const signatureClaim = await web3.eth.accounts.signTransaction(
       {
         from: account.address,
-        to: '0xCBc79bEd1ca10152447f083F4dfFB3842a2f2a3d',
+        to: airdropContractAddress,
         gasPrice: web3.utils.toHex(suggestion_gas),
-        data: AirdropContract.methods.isClaimed(wallet).encodeABI(),
+        data: airdropContract.methods.claim(wallet).encodeABI(),
       },
       privateKey
     )
 
-    const resultOfClaimPoll = await web3.eth.sendSignedTransaction(signatureClaim.rawTransaction)
+    const res = await web3.eth.sendSignedTransaction(signatureClaim.rawTransaction)
 
-    console.log(res.logs[0].transactionHash)
-    return `Here is the TX hash: ${res.logs[0].transactionHash}`
+    return { result: true, data: `Here is the TX hash is ${res.logs[0].transactionHash}` }
   } catch (error) {
     return { result: false, data: error }
   }
