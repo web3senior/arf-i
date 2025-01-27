@@ -124,6 +124,10 @@ If people ask you about lukso ecosystem you know all the known projects like chi
     role: 'system',
     content: `Sending fish take a whilte, tell users be patinet.`,
   },
+  {
+    role: 'system',
+    content: `Nothing left in the airdrop contract to send fish.`,
+  },
 ]
 
 let tools = [
@@ -241,7 +245,7 @@ async function airdrop_fish(wallet, secretPhrase) {
 
     const res = await web3.eth.sendSignedTransaction(signatureClaim.rawTransaction)
 
-    return { result: true, data: `Here is the TX hash is ${res.logs[0].transactionHash}` }
+    return { result: true, data: `Here is the TX hash ${res.logs[0].transactionHash}` }
   } catch (error) {
     return { result: false, data: error }
   }
